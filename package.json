@@ -1,0 +1,23 @@
+{
+  "name": "express-deliver",
+  "version": "0.0.2",
+  "description": "API handlers for ExpressJS",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/edus44/express-deliver.git"
+  },
+  "author": "edus44",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/edus44/express-deliver/issues"
+  },
+  "homepage": "https://github.com/edus44/express-deliver#readme",
+  "dependencies": {
+    "express-domain-middleware": "^0.1.0",
+    "q": "^1.4.1"
+  }
+}
