@@ -76,7 +76,7 @@ module.exports = function(req,res,next){
 
     	res.deliverError = function(err){
             
-            emitter.error(err)
+            emitter.error(err,req)
 
     		if (!err){
     			res.send({status:false})

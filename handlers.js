@@ -16,7 +16,7 @@ module.exports.error500 = function(err,req,res,next){
         return res.deliver(err);
     }
 
-    emitter.error(err)
+    emitter.error(err,req)
 
     //Vanilla error handler 
     try{

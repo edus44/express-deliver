@@ -6,8 +6,13 @@ var Emitter = class Emitter extends EventEmitter{
     constructor(){
         super();
     }
-    error(err){
+    error(err,req){
         process.nextTick(()=>{
+            try{
+                err._request = req;
+            }catch(e){
+                err = {_request : req}
+            }
             this.emit('error',err)
         })
     }
