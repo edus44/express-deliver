@@ -76,6 +76,7 @@ exports.from = function from(error){
     if (error instanceof Error){
         var err = new exception.InternalError(error.message);
         err.stack = error.stack;
+        err.statusCode = error.statusCode;
         return err;
     }
 
