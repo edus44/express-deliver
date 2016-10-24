@@ -1,0 +1,13 @@
+{
+    "node": true,
+    "strict": true,
+    "asi": true,
+    "newcap": false,
+    "esnext": true,
+    "eqnull": false,
+    "mocha":true,
+    "expr" : true,
+    "globals":{
+        "Promise" :true
+    }
+  }
