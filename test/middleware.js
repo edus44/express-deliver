@@ -62,11 +62,27 @@ describe('expressDeliver() success',()=>{
         })
     })
 
+
     it('should success with non null data',()=>{
         var input = 0
         var output = {
             status:true,
             data:0
+        }
+        testIO(input,output)
+    })
+
+    it('should success with expressDeliver.ResponseData',()=>{
+        var input = new expressDeliver.ResponseData({
+            data:'my data',
+            paginate: 'my extra param1',
+            metadata : 'my extra param2'
+        })
+        var output = {
+            status:true,
+            data:'my data',
+            paginate:'my extra param1',
+            metadata : 'my extra param2'
         }
         testIO(input,output)
     })
@@ -97,6 +113,19 @@ describe('expressDeliver() success',()=>{
         var output = {
             status:true,
             data:'my data'
+        }
+        testIO(input,output)
+    })
+
+    it('should success with expressDeliver.ResponseData within Promise',()=>{
+        var input = Promise.resolve(new expressDeliver.ResponseData({
+            data:'my data',
+            extra: 'my extra param'
+        }))
+        var output = {
+            status:true,
+            data:'my data',
+            extra:'my extra param'
         }
         testIO(input,output)
     })
