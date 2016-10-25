@@ -17,13 +17,16 @@ exception.CustomError = class CustomError extends exception.BaseException{
 };
 
 
-app.get('/unhandled-error',function(){
-    throw Error('unhandled')
-})
 app.get('/middleware-order-error',function(req,res){
-    res.deliver('test')
+    res.deliver('test') //SHOULD FAIL
 })
 
+
+app.get('/middleware-order-async-error',function(req,res,next){
+    setTimeout(function(){
+        throw Error('ultimate async error')
+    })
+})
 
 //Required middleware
 app.use(expressDeliver)
@@ -124,3 +127,8 @@ app.get('/double-response',function(req,res,next){
 expressDeliver.handlers(app)
 
 module.exports = app;
+
+if (typeof describe !== 'function')
+    app.listen(8008,function(){
+        console.log('listening ',8008);
+    })

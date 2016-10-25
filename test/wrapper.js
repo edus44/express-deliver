@@ -8,7 +8,9 @@ const supertest = require('supertest');
 const sinon = require('sinon');
 
 const app = require('./app')
+
 const request = supertest.agent(app)
+// const request = supertest.agent('http://localhost:8008')
 
 describe('server',()=>{
     var server;
@@ -243,4 +245,16 @@ describe('server',()=>{
             done()
         })
     })
+
+    //This test only pass if the requests server its up in another process
+    // run `node test/app` in another shell
+    if (typeof request.app == 'string'){
+        it('should break process with unhandled-error outside expressDeliver domain',(done)=>{
+            request.get('/middleware-order-async-error').end(function(err,res){
+                expect(err).to.exist;
+                expect(err.code).to.be.equal('ECONNRESET')
+                done()
+            })
+        })
+    }
 })
