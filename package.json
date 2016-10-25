@@ -1,10 +1,10 @@
 {
   "name": "express-deliver",
-  "version": "0.0.5",
+  "version": "0.0.6",
   "description": "API handlers for ExpressJS",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "mocha"
   },
   "repository": {
     "type": "git",
@@ -18,13 +18,14 @@
   "homepage": "https://github.com/edus44/express-deliver#readme",
   "dependencies": {
     "bluebird": "^3.4.6",
-    "express-domain-middleware": "^0.1.0",
-    "q": "^1.4.1"
+    "express-domain-middleware": "^0.1.0"
   },
   "devDependencies": {
     "chai": "^3.5.0",
     "express": "^4.14.0",
     "mocha": "^3.1.2",
-    "sinon": "^1.17.6"
+    "q": "^1.4.1",
+    "sinon": "^1.17.6",
+    "supertest": "^2.0.1"
   }
 }

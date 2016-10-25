@@ -24,7 +24,7 @@ app.get('/promise',expressDeliver.wrapper(function(req,res){
     })
 }))
 
-// View more usages on example folder
+// View more usages on test/app.js file
 
 
 //At the end

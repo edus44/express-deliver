@@ -1,9 +1,10 @@
 'use strict';
 
-var express = require('express'); //npm install express
+var express = require('express');
 
 var expressDeliver = require('../');
 var q = require('q');
+var Promise = require('bluebird');
 
 var app = express();
 var exception = expressDeliver.exception;
@@ -15,12 +16,20 @@ exception.CustomError = class CustomError extends exception.BaseException{
     }
 };
 
+
+app.get('/unhandled-error',function(){
+    throw Error('unhandled')
+})
+app.get('/middleware-order-error',function(req,res){
+    res.deliver('test')
+})
+
+
 //Required middleware
 app.use(expressDeliver)
 
-
 expressDeliver.on('error',function(err){
-    console.log('error',err);
+    // console.log('error',err && err.message);
 })
 
 //Sync response
@@ -30,10 +39,15 @@ app.get('/',expressDeliver.wrapper(function(req,res){
 
 //Promised response
 app.get('/promise',expressDeliver.wrapper(function(req,res){
-    return q.promise(function(resolve){
-        setTimeout(function(){
-            resolve('promised hi')
-        },1000)
+    return Promise.delay(50).then(()=>{
+        return Promise.resolve('promised hi')
+    })
+}))
+
+//Promised response
+app.get('/custom-response',expressDeliver.wrapper(function(req,res){
+    return new expressDeliver.ResponseData({
+        metadata : 12551
     })
 }))
 
@@ -41,7 +55,7 @@ app.get('/promise',expressDeliver.wrapper(function(req,res){
 app.get('/async',expressDeliver.wrapper(function(req,res){
     setTimeout(function(){
         res.deliver('async hi')
-    },1000)
+    },50)
     return expressDeliver.ignore
 }))
 
@@ -52,14 +66,12 @@ app.get('/out',expressDeliver.wrapper(function(req,res){
 }))
 
 //Rejected promise
-app.get('/promise-error',expressDeliver.wrapper(function(req,res){
-    var defer = q.defer();
-
-    setTimeout(function(){
-        defer.reject(exception.CustomError)
-    },500)
-
-    return defer.promise
+app.get('/promise-error',expressDeliver.wrapper(function(req,res,next){
+    return new Promise(function(resolve,reject){
+        setTimeout(function(){
+            reject(exception.CustomError)
+        },50)
+    })
 }))
 
 //Wrapper for objects
@@ -86,9 +98,29 @@ app.get('/error2',actions.error2);
 app.get('/error3',actions.error3);
 app.get('/error4',actions.error4);
 
+app.get('/throw-string',function(req,res,next){
+    throw 'nothing'  // same as: next('nothing')
+});
+
+app.get('/throw-error',function(req,res,next){
+    throw Error('err message')   // same as: next(Error('err message'))
+});
+
+app.get('/throw-async-error',function(req,res,next){
+    setTimeout(function(){
+        throw Error('err message')
+    },50)
+});
+
+app.get('/double-response',function(req,res,next){
+    res.send('response')
+    res.deliver('response')
+    setTimeout(function(){
+        next(Error('bad'))
+    })
+});
+
 
 expressDeliver.handlers(app)
 
-app.listen(8080,function(){
-    console.log('listening 8080');
-})
+module.exports = app;
