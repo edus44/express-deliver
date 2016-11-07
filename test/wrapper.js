@@ -117,7 +117,7 @@ describe('server',()=>{
 
     it('should return false with error2',(done)=>{
         request.get('/error2')
-        .expect(200)
+        .expect(500)
         .end(function(err,res){
             expect(err).to.be.null;
             expect(res.body).to.be.deep.equal({

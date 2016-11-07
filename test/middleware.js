@@ -155,7 +155,7 @@ describe('expressDeliver() fail',()=>{
             },
             data : 'my error data'
         }
-        testIO(input,output)
+        testIO(input,output,500)
     })
 
 
@@ -169,7 +169,7 @@ describe('expressDeliver() fail',()=>{
             },
             data : 'my error data'
         }
-        testIO(input,output)
+        testIO(input,output,500)
     })
 
     it('should fail with thenable',()=>{
@@ -186,7 +186,7 @@ describe('expressDeliver() fail',()=>{
             },
             data : 'my error data'
         }
-        testIO(input,output)
+        testIO(input,output,500)
     })
 
 
@@ -200,7 +200,7 @@ describe('expressDeliver() fail',()=>{
             },
             data : 'my error data'
         }
-        testIO(input,output)
+        testIO(input,output,500)
     })
 
     // it('should fail with async error',()=>{
@@ -217,7 +217,7 @@ describe('expressDeliver() fail',()=>{
     //         },
     //         data : 'my error data'
     //     }
-    //     testIO(input,output)
+    //     testIO(input,output,500)
     // })
 
 
@@ -231,7 +231,7 @@ describe('expressDeliver() fail',()=>{
             },
             data : 'Custom error'
         }
-        testIO(input,output)
+        testIO(input,output,500)
     })
 
     it('should fail with flat exception',()=>{
@@ -259,7 +259,7 @@ describe('expressDeliver() fail',()=>{
             },
             data : undefined
         }
-        testIO(input,output)
+        testIO(input,output,500)
     })
 
 

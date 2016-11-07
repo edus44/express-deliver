@@ -1,6 +1,6 @@
 {
   "name": "express-deliver",
-  "version": "0.0.7",
+  "version": "0.0.8",
   "description": "API handlers for ExpressJS",
   "main": "index.js",
   "scripts": {
