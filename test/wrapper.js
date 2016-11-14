@@ -61,6 +61,19 @@ describe('server',()=>{
         })
     })
 
+    it('should return true with generator function',(done)=>{
+        request.get('/generator')
+        .expect(200)
+        .end(function(err,res){
+            expect(err).to.be.null;
+            expect(res.body).to.be.deep.equal({
+                status:true,
+                data:'generator hi'
+            });
+            done()
+        })
+    })
+
     it('should return custom data response',(done)=>{
         request.get('/custom-response')
         .expect(200)
@@ -160,6 +173,22 @@ describe('server',()=>{
                     message:'Syntax Error'
                 },
                 data : ''
+            });
+            done()
+        })
+    })
+
+
+    it('should return false with error5 with generator',(done)=>{
+        request.get('/error5')
+        .end(function(err,res){
+            expect(err).to.be.null;
+            expect(res.body).to.be.deep.equal({
+                status:false,
+                error:{
+                    code:40001,
+                    message:'Custom Error'
+                }
             });
             done()
         })

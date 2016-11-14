@@ -62,6 +62,16 @@ app.get('/async',expressDeliver.wrapper(function(req,res){
     return expressDeliver.ignore
 }))
 
+//generator response
+app.get('/generator',expressDeliver.wrapper(function*(req,res){
+    var a = yield new Promise(function(resolve){
+        setTimeout(function(){
+            resolve('generator hi')
+        },50)
+    })
+    return a
+}))
+
 //Not deliver response
 app.get('/out',expressDeliver.wrapper(function(req,res){
     res.send('something')
@@ -92,6 +102,9 @@ var actions = expressDeliver.wrapper({
     },
     error4 : function(req,res){
         throw SyntaxError()
+    },
+    error5 : function * (req,res){
+        throw exception.CustomError
     }
 })
 
@@ -100,6 +113,7 @@ app.get('/error',actions.error);
 app.get('/error2',actions.error2);
 app.get('/error3',actions.error3);
 app.get('/error4',actions.error4);
+app.get('/error5',actions.error5);
 
 app.get('/throw-string',function(req,res,next){
     throw 'nothing'  // same as: next('nothing')
