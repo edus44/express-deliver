@@ -2,16 +2,23 @@
 
 const expressDeliver = require('..')
 const expect = require('chai').expect
-const sinon = require('sinon')
 const express = require('express')
 const request = require('supertest')
 const {exception} = expressDeliver
 
-function testIO(ctrl,test){
+function testCtrl(ctrl,statusCode,body,done){
     let app = express()
     expressDeliver(app)
     app.get('/',ctrl)
     expressDeliver.errorHandler(app)
+
+    let test = function(err,res){
+        expect(res.status).to.be.equal(statusCode)
+        expect(res.body).to.be.deep.equal(body)
+        done()
+    }
+    if (typeof statusCode == 'function')
+        test = statusCode
 
     request(app).get('/').end(test)
 }
@@ -19,7 +26,7 @@ function testIO(ctrl,test){
 describe('middlewares',()=>{
 
     it('should respond normally',(done)=>{
-        testIO((req,res)=>{
+        testCtrl((req,res)=>{
             res.send('hi')
         },(err,res)=>{
             expect(res.text).to.be.equal('hi')
@@ -28,33 +35,25 @@ describe('middlewares',()=>{
     })
 
     it('should deliver success',(done)=>{
-        testIO(function*(){
+        testCtrl(function*(){
             return 'hi'
-        },(err,res)=>{
-            expect(res.status).to.be.equal(200)
-            expect(res.body).to.be.deep.equal({
-                status:true,
-                data:'hi'
-            })
-            done()
-        })
+        },200,{
+            status:true,
+            data:'hi'
+        },done)
     })
 
     it('should deliver fail',(done)=>{
-        testIO(function*(){
+        testCtrl(function*(){
             throw new Error('foo')
-        },(err,res)=>{
-            expect(res.status).to.be.equal(500)
-            expect(res.body).to.be.deep.equal({
-                status:false,
-                error:{
-                    code:1000,
-                    message:'Internal error',
-                    data:'foo'
-                }
-            })
-            done()
-        })
+        },500,{
+            status:false,
+            error:{
+                code:1000,
+                message:'Internal error',
+                data:'foo'
+            }
+        },done)
     })
 
 
@@ -65,35 +64,78 @@ describe('middlewares',()=>{
             statusCode: 403,
             message: 'This is a custom error',
         })
-        testIO(function*(){
-            throw new exception.CustomError()
-        },(err,res)=>{
-            expect(res.status).to.be.equal(403)
-            expect(res.body).to.be.deep.equal({
-                status:false,
-                error:{
-                    code:4000,
-                    message:'This is a custom error'
-                }
-            })
-            done()
-        })
+        testCtrl(function*(req,res){
+            throw new res.exception.CustomError()
+        },403,{
+            status:false,
+            error:{
+                code:4000,
+                message:'This is a custom error'
+            }
+        },done)
     })
 
     it('should deliver 404 with empty next',(done)=>{
-        testIO(function*(req,res,next){
+        testCtrl(function*(req,res,next){
             next()
-        },(err,res)=>{
-            expect(res.status).to.be.equal(404)
-            expect(res.body).to.be.deep.equal({
-                status:false,
-                error:{
-                    code:1001,
-                    message:'Route not found'
-                }
+        },404,{
+            status:false,
+            error:{
+                code:1001,
+                message:'Route not found'
+            }
+        },done)
+    })
+
+    it('should deliver fail with async error',(done)=>{
+        testCtrl(function(){
+            setTimeout(()=>{
+                throw new Error('async')
             })
-            done()
-        })
+        },500,{
+            status:false,
+            error:{
+                code:1000,
+                message:'Internal error',
+                data:'async'
+            }
+        },done)
+    })
+
+    it('should deliver from promise',(done)=>{
+        testCtrl(function*(){
+            return yield Promise.resolve('from promise')
+        },200,{
+            status:true,
+            data:'from promise'
+        },done)
+    })
+
+    it('should deliver normal error',(done)=>{
+        testCtrl(()=>{
+            throw 'something'
+        },500,{
+            status:false,
+            error:{
+                code:1000,
+                message:'Internal error',
+                data:'something'
+            }
+        },done)
+    })
+
+    it('should deliver syntax error',(done)=>{
+        testCtrl(function*(){
+            //eslint-disable-next-line
+            foo() 
+        },500,{
+            status:false,
+            error:{
+                code:1000,
+                message:'Internal error',
+                data:'foo is not defined'
+            }
+        },done)
     })
 
 })
