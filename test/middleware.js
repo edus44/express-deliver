@@ -51,7 +51,7 @@ describe('middlewares',()=>{
             error:{
                 code:1000,
                 message:'Internal error',
-                data:'foo'
+                data:'Error: foo'
             }
         },done)
     })
@@ -97,7 +97,7 @@ describe('middlewares',()=>{
             error:{
                 code:1000,
                 message:'Internal error',
-                data:'async'
+                data:'Error: async'
             }
         },done)
     })
@@ -119,7 +119,7 @@ describe('middlewares',()=>{
             error:{
                 code:1000,
                 message:'Internal error',
-                data:'something'
+                data:'Error: something'
             }
         },done)
     })
@@ -133,7 +133,7 @@ describe('middlewares',()=>{
             error:{
                 code:1000,
                 message:'Internal error',
-                data:'foo is not defined'
+                data:'ReferenceError: foo is not defined'
             }
         },done)
     })
