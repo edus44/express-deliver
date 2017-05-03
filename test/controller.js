@@ -23,7 +23,7 @@ function testCtrl(ctrl,statusCode,body,done){
     request(app).get('/').end(test)
 }
 
-describe('middlewares',()=>{
+describe('controller',()=>{
 
     it('should respond normally',(done)=>{
         testCtrl((req,res)=>{
@@ -75,6 +75,44 @@ describe('middlewares',()=>{
         },done)
     })
 
+
+    it('should deliver converted custom exception',(done)=>{
+        exception.define({
+            name:'CustomConvertedError',
+            code: 4001,
+            statusCode: 403,
+            message: 'This is a custom converted error',
+            conversion: err => err.message=='Custom message match'
+        })
+        testCtrl(function*(){
+            throw new Error('Custom message match')
+        },403,{
+            status:false,
+            error:{
+                code:4001,
+                message:'This is a custom converted error'
+            }
+        },done)
+    })
+
+    it('should deliver 500 with offlimit statusCode',(done)=>{
+        exception.define({
+            name:'CustomStatusCode',
+            code: 4002,
+            statusCode: 200,
+            message: 'This is a custom error'
+        })
+        testCtrl(function*(req,res){
+            throw new res.exception.CustomStatusCode()
+        },500,{
+            status:false,
+            error:{
+                code:4002,
+                message:'This is a custom error'
+            }
+        },done)
+    })
+
     it('should deliver 404 with empty next',(done)=>{
         testCtrl(function*(req,res,next){
             next()
@@ -98,6 +136,20 @@ describe('middlewares',()=>{
                 code:1000,
                 message:'Internal error',
                 data:'Error: async'
+            }
+        },done)
+    })
+
+    it('should deliver fail calling next with value and ignore promise rejection',(done)=>{
+        testCtrl(function*(req,res,next){
+            next('something')
+            throw 'shit'
+        },500,{
+            status:false,
+            error:{
+                code:1000,
+                message:'Internal error',
+                data:'Error: something'
             }
         },done)
     })
@@ -136,6 +188,21 @@ describe('middlewares',()=>{
                 data:'ReferenceError: foo is not defined'
             }
         },done)
+    })
+
+    it('should avoid headers sent',(done)=>{
+        testCtrl(function*(req,res){
+            res.send({custom:'first'})
+            return 'second'
+        },200,{custom:'first'},done)
+    })
+
+
+    it('should avoid headers sent on error',(done)=>{
+        testCtrl(function*(req,res){
+            res.send({custom:'first'})
+            throw 'second'
+        },200,{custom:'first'},done)
     })
 
 })
