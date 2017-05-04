@@ -163,6 +163,23 @@ describe('controller',()=>{
         },done)
     })
 
+    it('should deliver custom response data',(done)=>{
+        testCtrl(function*(req,res){
+            return new res.ResponseData({
+                paginated:true
+            })
+        },200,{
+            status:true,
+            paginated:true
+        },done)
+    })
+
+    it('should deliver custom response data without status',(done)=>{
+        testCtrl(function*(req,res){
+            return new res.ResponseData({clean:true},{appendStatus:false})
+        },200,{clean:true},done)
+    })
+
     it('should deliver normal error',(done)=>{
         testCtrl(()=>{
             throw 'something'
@@ -198,11 +215,23 @@ describe('controller',()=>{
     })
 
 
-    it('should avoid headers sent on error',(done)=>{
-        testCtrl(function*(req,res){
-            res.send({custom:'first'})
-            throw 'second'
-        },200,{custom:'first'},done)
+    it('should use res.locals as context',(done)=>{
+        let app = express()
+        expressDeliver(app)
+        app.get('/',function(req,res,next){
+            res.locals.signal = 1
+            next()
+        },function*(){
+            return this.signal
+        })
+        expressDeliver.errorHandler(app)
+        request(app).get('/').end(function(err,res){
+            expect(res.body).to.be.deep.equal({
+                status:true,
+                data:1
+            })
+            done()
+        })
     })
 
 })
