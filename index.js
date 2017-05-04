@@ -1,5 +1,6 @@
 'use strict'
 
-module.exports = require('./lib/loader')
-module.exports.errorHandler = require('./lib/errorHandler')
+module.exports = require('./lib/mainLoader')
+module.exports.errorHandler = require('./lib/errorHandlerLoader')
 module.exports.exception = require('./lib/exception')
+module.exports.ResponseData = require('./lib/ResponseData')

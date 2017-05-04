@@ -8,7 +8,9 @@ const {exception} = expressDeliver
 
 function testCtrl(ctrl,statusCode,body,done){
     let app = express()
-    expressDeliver(app)
+    expressDeliver(app,{
+        printInternalErrorData:true
+    })
     app.get('/',ctrl)
     expressDeliver.errorHandler(app)
 
@@ -119,7 +121,7 @@ describe('controller',()=>{
         },404,{
             status:false,
             error:{
-                code:1001,
+                code:1002,
                 message:'Route not found'
             }
         },done)
