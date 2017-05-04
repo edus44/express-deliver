@@ -182,6 +182,12 @@ describe('controller',()=>{
         },200,{clean:true},done)
     })
 
+    it('should deliver non-object response data with status',(done)=>{
+        testCtrl(function*(req,res){
+            return new res.ResponseData('algo',{appendStatus:true})
+        },200,{status:true},done)
+    })
+
     it('should deliver normal error',(done)=>{
         testCtrl(()=>{
             throw 'something'
