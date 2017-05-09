@@ -2,8 +2,7 @@
 
 const expressDeliver = require('..')
 const expect = require('chai').expect
-const express = require('express')
-const {exception} = expressDeliver
+const exception = expressDeliver
 
 describe('exceptions',()=>{
 

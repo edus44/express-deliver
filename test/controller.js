@@ -4,7 +4,7 @@ const expressDeliver = require('..')
 const expect = require('chai').expect
 const express = require('express')
 const request = require('supertest')
-const {exception} = expressDeliver
+const exception = expressDeliver.exception
 
 function testCtrl(ctrl,statusCode,body,done){
     let app = express()
