@@ -6,7 +6,7 @@
   "scripts": {
     "test": "mocha",
     "cover": "nyc --reporter=html --report-dir=./test/coverage --temp-directory ./test/coverage/tmp npm test",
-    "coveralls": "nyc npm test && nyc report --reporter=text-lcov | coveralls",
+    "codecov": "nyc --reporter=lcov npm test && codecov",
     "dev": "opn test/coverage/index.html --ext html && nodemon --exec npm run cover"
   },
   "repository": {
@@ -21,7 +21,7 @@
   "homepage": "https://github.com/edus44/express-deliver#readme",
   "devDependencies": {
     "chai": "^3.5.0",
-    "coveralls": "^2.13.1",
+    "codecov": "^2.1.0",
     "eslint": "^3.19.0",
     "eslint-config-gigigo-standard": "^0.1.9",
     "express": "^4.15.2",
