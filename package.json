@@ -5,8 +5,8 @@
   "main": "index.js",
   "scripts": {
     "test": "mocha",
-    "cover": "nyc --reporter=html --reporter=text --reporter=lcov --report-dir=./test/coverage --temp-directory ./test/coverage/tmp npm run test",
-    "coveralls": "npm run cover && cat ./test/coverage/lcov.info | coveralls",
+    "cover": "nyc --reporter=html --report-dir=./test/coverage --temp-directory ./test/coverage/tmp npm test",
+    "coveralls": "nyc npm test && nyc report --reporter=text-lcov | coveralls",
     "dev": "opn test/coverage/index.html --ext html && nodemon --exec npm run cover"
   },
   "repository": {
