@@ -108,7 +108,7 @@ app.use(function*(req,res,next){
 //Later in other controller of the same request
 app.get('/',function*(){
     return this.user.name
-}
+})
 /*
 200 {"status":true,"data":"Alice"}
 */
@@ -137,3 +137,325 @@ app.get('/',function(req,res,next){
 */
 ```
 
+
+#### Custom Exceptions
+
+You can define your own custom exceptions, it will be available across your app. This definitions should be made before initializing `expressDeliver`
+
+```javascript
+const {exception} = require('express-deliver')
+// or const exception = require('express-deliver').exception
+
+exception.define({
+    name:'MyCustomError',
+    code:2001,
+    message:'This my public message',
+    statusCode:412
+})
+```
+
+Throw example in a service:
+```javascript
+//service.js
+const {exception} = require('express-deliver')
+
+exports.getData(){
+    throw new exception.MyCustomError()
+}
+```
+
+The `exception` object is available in `res` also:
+```javascript
+app.get('/',function(req,res){
+    throw new res.exception.MyCustomError()
+ })
+/* --> 412 
+{
+    status:false,
+    error:{
+        code:2001,
+        message:'This my public message'
+    }
+}
+*/
+```
+
+The first argument of the contructor ends in `error.data` property of the response:
+```javascript
+app.get('/',function(req,res){
+    throw new res.exception.MyCustomError({meta:'custom'})
+ })
+/* --> 412 
+{
+    status:false,
+    error:{
+        code:2001,
+        message:'This my public message',
+        data: {
+            meta: 'custom'
+        }
+    }
+}
+*/
+```
+
+#### Converting errors to exceptions
+
+Generic errors thrown by third parties can be converted automatically to your custom exceptions. 
+
+Without conversion we got:
+```javascript
+app.get('/',function*(){
+    return fs.readdirSync('/invalid/path')
+ })
+/* --> 500 
+{
+    status: false,
+    error: {
+        code: 1000,
+        message: "Internal error",
+        data: "Error: ENOENT: no such file or directory, scandir '/invalid/path'"
+    }
+}
+*/
+```
+
+To enable exception conversion you can define your exceptions with a conversion function. This function gets the generic error as first parameter and should return a boolean.
+
+For example:
+
+```javascript
+//Previously in our app
+exception.define({
+    name:'ENOENT',
+    code:2004,
+    statusCode:400,
+    message:'No such file or directory',
+    conversion: err => err.code=='ENOENT'
+})
+
+//Route controller
+app.get('/',function(){
+    return fs.readdirSync('/invalid/path')
+ })
+/* --> 400 
+{
+    status: false,
+    error: {
+        code: 2004,
+        message: "'No such file or directory"
+    }
+}
+*/
+
+// You can customize the response error.data with:
+exception.define({
+    name:'ParsingError',
+    code:2005,
+    message:'Cannot parse text',
+    conversion:{
+        check: err => err.message.indexOf('Unexpected token')===0,
+        data: err=> 'Parsing problem on:' + err.message
+    }
+})
+```
+
+#### Error response options
+
+
+Responses object can contain more info about errors:
+
+```javascript
+
+expressDeliver(app,{
+    printErrorStack: true, //Default: false
+    printInternalErrorData: true //Default: false *
+})
+
+//Default error response:
+{
+    status: false,
+    error: {
+        code: 1000,
+        message: "Internal error"
+    }
+}
+
+//With both set to true:
+{
+    status: false,
+    error: {
+        code: 1000,
+        message: "Internal error",
+        data: "ReferenceError: foo is not defined",
+        stack: "ReferenceError: foo is not defined at null.<anonymous> (/home/eduardo.hidalgo/repo/own/file-manager/back/app/routes.js:13:9) at next (native) at onFulfilled (/home/eduardo.hidalgo/repo/own/express-deliver/node_modules/co/index.js:65:19) at .."
+    }
+}
+
+
+```
+Both should be set to `false` for production enviroments.
+
+_* This documentation shows the responses as if `printInternalErrorData` were `true` by default_
+
+#### Error logging
+
+This example is using [debug](https://www.npmjs.com/package/debug) for logging to console:
+
+```javascript
+const debug = require('debug')('error')
+
+expressDeliver(app,{
+    onError(err,req,res){
+        debug(err.name,err)
+    }
+})
+
+//Example console output:
+/*
+  app:error InternalError { ReferenceError: foo is not defined
+    at null.<anonymous> (controller.js:13:9)
+    at ...
+  name: 'InternalError',
+  code: 1000,
+  statusCode: 500,
+  data: 'ReferenceError: foo is not defined',
+  _isException: true } +611ms
+*/
+
+```
+
+
+## Customizing responses
+
+By default the responses look like:
+```javascript
+// Success:
+{
+    "status":true,
+    "data":[your-data]
+}
+
+//Errors:
+{
+    "status":false,
+    "error":{
+        "code":[error-code],
+        "message":[error-message],
+        "data":[optional-error-data],
+    }
+}
+```
+
+#### Using ResponseData
+
+Same as `exception`, `ResponseData` is available from the package and controller `res`. It can be used to extend the response properties.
+
+```javascript
+const {ResponseData} = require('express-deliver')
+// or const ResponseData = require('express-deliver').ResponseData
+
+app.get('/',function*(req,res){
+    // res.ResponseData === ResponseData
+    return new res.ResponseData({
+        meta:'custom'
+    })
+})
+/* --> 200 
+{
+    "status": true,
+    "meta": "custom"
+}
+*/
+```
+
+You can remove the `status` from the response (with this option set to false, response data is not converted to object and you can send any other type):
+
+```javascript
+function*(req,res){
+    return new res.ResponseData('my text response',{appendStatus:false})
+}
+/* --> 200 
+my text response
+*/
+```
+
+#### Transform responses option
+
+In options parameter, you can set transformation for both success and error responses
+
+Example:
+
+```javascript
+expressDeliver(app,{
+    transformSuccessResponse(value,options,req){
+        return {result:value}
+    },
+    transformErrorResponse(error,req){
+        return {
+            error:error.code,
+            where:req.url
+        }
+    }
+})
+
+
+// Success:
+{
+    "result":[your-data]
+}
+
+//Errors:
+{
+    "error":[error-code],
+    "where":[request-url]
+}
+```
+
+
+## Corner cases
+
+#### Empty return
+```javascript
+function*(){
+    //Nothing here
+}
+//or
+function*(){
+    let a
+    return a
+}
+
+/* --> 200 
+{
+    "status": true
+}
+*/
+```
+
+
+#### Sending a response before returning something
+
+Resolving the response before returning something in generator, throws an error (`HeadersSent`) caughtable in `onError` logging option :
+
+```javascript
+function*(req,res){
+    res.send('my previously sent data')
+    return 'foo'
+}
+
+expressDeliver(app,{
+    onError(err,req,res){
+        console.log(err.name == 'HeadersSent') //true
+    }
+})
+
+/* --> 200 
+my previously sent data
+*/
+
+```
+
+## License
+
+[MIT](LICENSE)
