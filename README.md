@@ -441,12 +441,13 @@ Resolving the response before returning something in generator, throws an error 
 ```javascript
 function*(req,res){
     res.send('my previously sent data')
-    return 'foo'
+    return {foo:20}
 }
 
 expressDeliver(app,{
     onError(err,req,res){
-        console.log(err.name == 'HeadersSent') //true
+        console.log(err.name) //HeadersSent
+        console.log(err.data) //{status:true,data:{foo:20}}}
     }
 })
 

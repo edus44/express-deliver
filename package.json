@@ -1,6 +1,6 @@
 {
   "name": "express-deliver",
-  "version": "1.0.0-beta",
+  "version": "1.0.0-rc-1",
   "description": "API json responses done easy",
   "keywords":["express","api","json","co","generators","promises","generator","promise","error handler","exception"],
   "main": "index.js",
