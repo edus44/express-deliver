@@ -4,7 +4,7 @@
 [![Travis branch](https://img.shields.io/travis/edus44/express-deliver/master.svg)](https://travis-ci.org/edus44/express-deliver)
 [![Code Climate](https://img.shields.io/codeclimate/github/edus44/express-deliver.svg)](https://codeclimate.com/github/edus44/express-deliver)
 
-Make API json responses easily using generators and promises. 
+Make API json responses easily using generators (or async/await) and promises. 
 
 ## Motivations
 Tired of writting the same json responses and error catches everywhere across the express app controllers.
@@ -28,9 +28,14 @@ The same behaviour using `expressDeliver` becomes:
 app.get('/',function*(){
     return yield getAsyncList()
 })
+
+//or using ES7 async/await 
+app.get('/',async function(){
+    return await getAsyncList()
+})
 ```
 
-It allows you to write simpler controllers, with easy to read & write 'synchronous' code thanks to generators (see [tj/co](https://www.npmjs.com/package/co)) 
+It allows you to write simpler controllers, with easy to read & write 'synchronous' code thanks to __generators__ or __ES7 async/await__
 
 ## Initialize
 This is how to initialize `expressDeliver`:
@@ -91,6 +96,47 @@ function*(){
 
 See more yield options in [co](https://www.npmjs.com/package/co) documentation
 
+
+## Async/await
+
+_To use this feature you will need node >=7.6_
+
+The same pattern used with generators can be used here, with the exception that you can only `await` for promises. So if you want to resolve promises in parallel you will need to use Promise.all for arrays or [bluebird](http://bluebirdjs.com/docs/getting-started.html) methods for something more sofisticated like `.props()`.
+
+The same examples as before, but using async/await:
+
+```javascript
+async function(){
+    return {lastVersion:15}
+}
+// --> 200 {"status":true,"data":{"lastVersion":15}}
+
+
+async function(req){
+    // getUser function returns a promise with user object
+    return await getUser(req.query.userId) 
+}
+// --> 200 {"status":true,"data":{"name":"Alice"}}
+
+
+async function(){
+    // These promises are resolved in parallel
+    return await bluebird.props({
+        a: Promise.resolve(1),
+        b: Promise.resolve(2),
+    })
+}
+// --> 200 {"status":true,"data":{"a":1,"b":2}}
+
+
+async function(){
+    let [a,b] = await Promise.all([ Promise.resolve(1), Promise.resolve(2) ])
+    return a + b
+}
+// --> 200 {"status":true,"data":3}
+
+```
+_In this document you will find all the examples written with generators, but the behaviors all are almost the same using async/await (just changing * for async and yield for await)._
 
 ## Using as middleware
 
