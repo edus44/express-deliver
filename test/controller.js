@@ -26,7 +26,9 @@ function testCtrl(ctrl,statusCode,body,done){
 }
 
 //Check for async support
-let [,vMajor,vMinor] = process.version.match(/v(\d+).(\d+)/ ) || []
+let m = process.version.match(/v(\d+).(\d+)/ )
+let vMajor = m && m[1]
+let vMinor = m && m[2]
 let supportsAsync = vMajor>=7 && vMinor >= 6
 
 describe('controller',()=>{
