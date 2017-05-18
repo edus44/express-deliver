@@ -25,6 +25,10 @@ function testCtrl(ctrl,statusCode,body,done){
     request(app).get('/').end(test)
 }
 
+//Check for async support
+let [,vMajor,vMinor] = process.version.match(/v(\d+).(\d+)/ ) || []
+let supportsAsync = vMajor>=7 && vMinor >= 6
+
 describe('controller',()=>{
 
     it('should respond normally',(done)=>{
@@ -44,6 +48,20 @@ describe('controller',()=>{
             data:'hi'
         },done)
     })
+
+    if (supportsAsync){
+        //If called normally throws error in <7.6 
+        eval(`
+        it('should deliver success with async function',(done)=>{
+            testCtrl(async function(){
+                return await Promise.resolve('hi')
+            },200,{
+                status:true,
+                data:'hi'
+            },done)
+        })
+        `)
+    }
 
     it('should deliver fail',(done)=>{
         testCtrl(function*(){

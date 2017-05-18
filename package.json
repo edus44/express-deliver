@@ -1,8 +1,8 @@
 {
   "name": "express-deliver",
-  "version": "1.0.0-rc-1",
+  "version": "1.0.0-rc-2",
   "description": "API json responses done easy",
-  "keywords":["express","api","json","co","generators","promises","generator","promise","error handler","exception"],
+  "keywords":["express","api","json","co","generators","promises","generator","promise","error handler","exception","async","await","async/await"],
   "main": "index.js",
   "scripts": {
     "test": "mocha",
