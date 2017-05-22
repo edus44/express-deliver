@@ -398,6 +398,48 @@ expressDeliver(app,{
 
 ```
 
+## Using Routers
+
+You can use routers (or sub-apps) as usual, just remember to initialize it with `expressDeliver`. For example:
+
+```javascript
+// authRouter.js
+const router = express.Router()
+
+expressDeliver(router)
+
+router.get('/',function*(){
+    return 'hi from auth'
+})
+
+// errorHandler is not necesary, main app will manage it
+module.exports = router
+
+
+
+// main.js
+const authRouter = require('./authRouter.js')
+const app = express()
+
+expressDeliver(app)
+
+app.use('/auth',authRouter)
+
+expressDeliver.errorHandler(app)
+
+
+/*  Request to /auth --> 200 
+{
+    "status": true,
+    "meta": "hi from auth"
+}
+*/
+```
+
+The exceptions loaded into the `router` are only available within its controllers, as well as any other exceptions from parent apps or routers.
+
+Any other option defined in routers are ignored in favor of main app options.
+
 
 ## Customizing responses
 
