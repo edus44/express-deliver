@@ -431,7 +431,7 @@ expressDeliver.errorHandler(app)
 /*  Request to /auth --> 200 
 {
     "status": true,
-    "meta": "hi from auth"
+    "data": "hi from auth"
 }
 */
 ```
