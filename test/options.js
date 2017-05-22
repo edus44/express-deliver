@@ -13,7 +13,7 @@ function testCtrl(options,ctrl,test){
     request(app).get('/').end(test)
 }
 
-describe('controller',()=>{
+describe('options',()=>{
 
     it('should not print stack',(done)=>{
         testCtrl({
@@ -115,6 +115,14 @@ describe('controller',()=>{
             expect(calledErr.name).to.be.equal('HeadersSent')
             done()
         })
+    })
+
+    it('should alert from invalid exceptionPool',()=>{
+        expect(()=>{
+            expressDeliver(express(),{
+                exceptionPool:{}
+            })
+        }).to.throw(Error)
     })
 
 

@@ -4,11 +4,13 @@ const expressDeliver = require('..')
 const expect = require('chai').expect
 const express = require('express')
 const request = require('supertest')
-const exception = expressDeliver.exception
+const ExceptionPool = expressDeliver.ExceptionPool
 
-function testCtrl(ctrl,statusCode,body,done){
+
+function testCtrl(ctrl,statusCode,body,done,exceptionPool){
     let app = express()
     expressDeliver(app,{
+        exceptionPool,
         printInternalErrorData:true
     })
     app.get('/',ctrl)
@@ -80,12 +82,7 @@ describe('controller',()=>{
 
 
     it('should deliver custom exception',(done)=>{
-        exception.define({
-            name:'CustomError',
-            code: 4000,
-            statusCode: 403,
-            message: 'This is a custom error',
-        })
+
         testCtrl(function*(req,res){
             throw new res.exception.CustomError()
         },403,{
@@ -94,18 +91,18 @@ describe('controller',()=>{
                 code:4000,
                 message:'This is a custom error'
             }
-        },done)
+        },done, new ExceptionPool({
+            CustomError:{
+                code: 4000,
+                statusCode: 403,
+                message: 'This is a custom error',
+            }
+        }))
     })
 
 
     it('should deliver converted custom exception',(done)=>{
-        exception.define({
-            name:'CustomConvertedError',
-            code: 4001,
-            statusCode: 403,
-            message: 'This is a custom converted error',
-            conversion: err => err.message=='Custom message match'
-        })
+
         testCtrl(function*(){
             throw new Error('Custom message match')
         },403,{
@@ -114,16 +111,18 @@ describe('controller',()=>{
                 code:4001,
                 message:'This is a custom converted error'
             }
-        },done)
+        },done,new ExceptionPool({
+            CustomConvertedError:{
+                code: 4001,
+                statusCode: 403,
+                message: 'This is a custom converted error',
+                conversion: err => err.message=='Custom message match'
+            }
+        }))
     })
 
     it('should deliver 500 with offlimit statusCode',(done)=>{
-        exception.define({
-            name:'CustomStatusCode',
-            code: 4002,
-            statusCode: 200,
-            message: 'This is a custom error'
-        })
+
         testCtrl(function*(req,res){
             throw new res.exception.CustomStatusCode()
         },500,{
@@ -132,7 +131,13 @@ describe('controller',()=>{
                 code:4002,
                 message:'This is a custom error'
             }
-        },done)
+        },done,new ExceptionPool({
+            CustomStatusCode:{
+                code: 4002,
+                statusCode: 200,
+                message: 'This is a custom error'
+            }
+        }))
     })
 
     it('should deliver 404 with empty next',(done)=>{

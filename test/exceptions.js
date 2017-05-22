@@ -2,84 +2,106 @@
 
 const expressDeliver = require('..')
 const expect = require('chai').expect
-const exception = expressDeliver.exception
+const ExceptionPool = expressDeliver.ExceptionPool
 
-describe('exceptions',()=>{
+describe('exceptionPool',()=>{
 
-    it('should should be an object',()=>{
-        expect(exception).to.be.an('object')
+    it('should be an function',()=>{
+        expect(ExceptionPool).to.be.a('function')
     })
 
     it('should define an exception',()=>{
-        exception.define({
-            name:'CustomError',
-            code:2000,
-            message:'custom message',
+        let exceptionPool = new ExceptionPool({
+            CustomError:{
+                code:2000,
+                message:'custom message',
+            }
         })
-        expect(exception.CustomError).to.be.a('function')
+        expect(exceptionPool.CustomError).to.be.a('function')
     })
 
     it('should fail to define with invalid options',()=>{
         expect(()=>{
-            exception.define({
-                name:'CustomError2'
+            new ExceptionPool({
+                CustomError:{}
             })
         }).to.throw(Error)
     })
 
 
     it('should instantiate an exception',()=>{
-        let exp = new exception.CustomError('mydata')
+        let exceptionPool = new ExceptionPool({
+            CustomError:{
+                code:2000,
+                message:'custom message',
+            }
+        })
+
+        let exp = new exceptionPool.CustomError('mydata')
         expect(exp).to.be.instanceof(Error)
-        expect(exp).to.be.instanceof(exception.CustomError)
+        expect(exp).to.be.instanceof(exceptionPool.CustomError)
         expect(exp.data).to.be.equal('mydata')
     })
 
 })
 
-describe('exceptions conversions',()=>{
+describe('exceptionPool conversions',()=>{
 
     it('should define an exception with conversion',()=>{
-        exception.define({
-            name:'CustomError',
-            code:2000,
-            message:'custom message',
-            conversion:err=>err.message=='match message'
-        })
-        expect(exception.CustomError).to.be.a('function')
-    })
 
-    it('should define an exception with conversion',()=>{
-        exception.define({
-            name:'CustomError',
-            code:2000,
-            message:'custom message',
-            conversion:err=>err.message=='match message'
+        let exceptionPool = new ExceptionPool({
+            CustomError:{
+                code:2000,
+                message:'custom message',
+                conversion:err=>err.message=='match message'
+            }
         })
-        expect(exception.CustomError).to.be.a('function')
+        expect(exceptionPool.CustomError).to.be.a('function')
+        expect(exceptionPool._conversions.length).to.be.equal(1)
     })
 
 
     it('should fail with invalid conversion',()=>{
         expect(()=>{
-            exception.define({
-                name:'CustomError',
-                code:2000,
-                message:'custom message',
-                conversion:'string'
+            new ExceptionPool({
+                CustomError:{
+                    code:2000,
+                    message:'custom message',
+                    conversion:'string'
+                }
             })
         }).to.throw(Error)
     })
 
-    it('should convert an error to a generic exception',()=>{
-        let err = exception._convert(new Error('unkown error'))
-        expect(err).to.be.instanceof(exception.InternalError)
-    })
-
-
     it('should convert an error to known exception',()=>{
-        let err = exception._convert(new Error('match message'))
-        expect(err).to.be.instanceof(exception.CustomError)
+
+        let exceptionPool = new ExceptionPool({
+            CustomError:{
+                code:2000,
+                message:'custom message',
+                conversion:err=>err.message=='match message'
+            }
+        })
+
+        let err = exceptionPool._convert(new Error('match message'))
+        expect(err).to.be.instanceof(exceptionPool.CustomError)
     })
+
+
+    it('should return undefined if not find conversion',()=>{
+
+        let exceptionPool = new ExceptionPool({
+            CustomError:{
+                code:2000,
+                message:'custom message',
+                conversion:err=>err.message=='match message'
+            }
+        })
+
+        let err = new Error('unkown error')
+        let excep = exceptionPool._convert(err)
+        expect(excep).to.not.exists
+    })
+
 
 })
