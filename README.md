@@ -186,31 +186,59 @@ app.get('/',function(req,res,next){
 
 #### Custom Exceptions
 
-You can define your own custom exceptions, it will be available across your app. This definitions should be made before initializing `expressDeliver`
+Your custom exceptions are defined inside an `ExceptionPool` instance. 
+
+Example `exceptionPool.js` file:
 
 ```javascript
-const {exception} = require('express-deliver')
-// or const exception = require('express-deliver').exception
 
-exception.define({
-    name:'MyCustomError',
-    code:2001,
-    message:'This my public message',
-    statusCode:412
+const {ExceptionPool} = require('express-deliver')
+// or const ExceptionPool = require('express-deliver').ExceptionPool
+
+const exceptionPool = new ExceptionPool({
+    MyCustomError: {
+        code:2001,
+        message:'This my public message',
+        statusCode:412
+    },
+    MyError: {
+        code:4000,
+        message:'My message',
+    }
 })
+
+//Optional post-creation exception adding
+exceptionPool.add('OtherError',{
+    code:1100,
+    message:'Other error message'
+})
+
+module.exports = exceptionPool
+
 ```
+
+These are passed to `expressDeliver` options:
+
+```javascript
+expressDeliver(app,{
+    exceptionPool: require('./exceptionPool.js')
+})
+
+```
+
+
 
 Throw example in a service:
 ```javascript
 //service.js
-const {exception} = require('express-deliver')
+const {exception} = require('./exceptionPool')
 
 exports.getData(){
     throw new exception.MyCustomError()
 }
 ```
 
-The `exception` object is available in `res` also:
+The `exceptionPool` object is available in `res`:
 ```javascript
 app.get('/',function(req,res){
     throw new res.exception.MyCustomError()
@@ -271,9 +299,9 @@ To enable exception conversion you can define your exceptions with a conversion 
 For example:
 
 ```javascript
-//Previously in our app
-exception.define({
-    name:'ENOENT',
+// Previously in our app 
+// added to expressDeliver options also)
+exceptionPool.add('NoSuchFile',{
     code:2004,
     statusCode:400,
     message:'No such file or directory',
@@ -295,8 +323,7 @@ app.get('/',function(){
 */
 
 // You can customize the response error.data with:
-exception.define({
-    name:'ParsingError',
+exceptionPool.add('ParsingError',{
     code:2005,
     message:'Cannot parse text',
     conversion:{
@@ -370,6 +397,48 @@ expressDeliver(app,{
 */
 
 ```
+
+## Using Routers
+
+You can use routers (or sub-apps) as usual, just remember to initialize it with `expressDeliver`. For example:
+
+```javascript
+// authRouter.js
+const router = express.Router()
+
+expressDeliver(router)
+
+router.get('/',function*(){
+    return 'hi from auth'
+})
+
+// errorHandler is not necesary, main app will manage it
+module.exports = router
+
+
+
+// main.js
+const authRouter = require('./authRouter.js')
+const app = express()
+
+expressDeliver(app)
+
+app.use('/auth',authRouter)
+
+expressDeliver.errorHandler(app)
+
+
+/*  Request to /auth --> 200 
+{
+    "status": true,
+    "meta": "hi from auth"
+}
+*/
+```
+
+The exceptions loaded into the `router` are only available within its controllers, as well as any other exceptions from parent apps or routers.
+
+Any other option defined in routers are ignored in favor of main app options.
 
 
 ## Customizing responses

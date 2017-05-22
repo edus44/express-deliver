@@ -1,6 +1,6 @@
 'use strict'
 
-module.exports = require('./lib/mainLoader')
-module.exports.errorHandler = require('./lib/errorHandlerLoader')
-module.exports.exception = require('./lib/exception')
-module.exports.ResponseData = require('./lib/ResponseData')
+module.exports = require('./lib/loader/main')
+module.exports.errorHandler = require('./lib/loader/errorHandler')
+module.exports.ExceptionPool = require('./lib/util/ExceptionPool')
+module.exports.ResponseData = require('./lib/util/ResponseData')
