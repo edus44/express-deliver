@@ -152,6 +152,16 @@ describe('controller',()=>{
         },done)
     })
 
+    it('should ignore promise result',(done)=>{
+        testCtrl(function*(req,res,next){
+            next('ignore')
+            res.status(201)
+            res.send({message:'hi'})
+        },201,{
+            message:'hi'
+        },done)
+    })
+
     it('should deliver fail with async error',(done)=>{
         testCtrl(function(){
             setTimeout(()=>{

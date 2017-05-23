@@ -125,5 +125,21 @@ describe('options',()=>{
         }).to.throw(Error)
     })
 
+    it('should alert from invalid defaultExceptionPool',()=>{
+        expect(()=>{
+            expressDeliver(express(),{
+                defaultExceptionPool:{}
+            })
+        }).to.throw(Error)
+    })
+
+    it('should accept defaultExceptionPool',()=>{
+        let ret = expressDeliver(express(),{
+            defaultExceptionPool : new expressDeliver.ExceptionPool()
+        })
+
+        expect(ret).to.be.true
+    })
+
 
 })

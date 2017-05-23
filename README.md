@@ -530,6 +530,21 @@ expressDeliver(app,{
 
 ## Corner cases
 
+#### No json response
+
+You should use this approach if you want to use coroutine capabilities but not ending in a json response:
+
+```javascript
+function*(req,res,next){
+    next('ignore') //This tells expressDeliver to ignore coroutine result
+    res.render('home',yield getData())
+}
+
+/* --> 200 
+<html><head>...
+*/
+```
+
 #### Empty return
 ```javascript
 function*(){
