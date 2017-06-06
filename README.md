@@ -37,8 +37,14 @@ app.get('/',async function(){
 
 It allows you to write simpler controllers, with easy to read & write 'synchronous' code thanks to __generators__ or __ES7 async/await__
 
-## Initialize
-This is how to initialize `expressDeliver`:
+## Getting started
+
+```bash
+npm install --save express-deliver
+yarn add express-deliver
+```
+
+Initialize your `expressDeliver` app:
 ```javascript
 const expressDeliver = require('express-deliver')
 const express = require('express')
