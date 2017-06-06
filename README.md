@@ -138,6 +138,49 @@ async function(){
 ```
 _In this document you will find all the examples written with generators, but the behaviors all are almost the same using async/await (just changing * for async and yield for await)._
 
+## Promises
+
+You can also return plain old promises. Your controller/middleware function name should ends in `'deliver'`. Examples:
+
+```javascript
+app.get('/',function deliver(){
+    return Promise.resolve('hi')
+})
+/*
+200 {"status":true,"data":"hi"}
+*/
+
+app.get('/user',function getUserDeliver(){
+    return getUser(req.query.userId)
+        .then( user => user.name )
+})
+/*
+200 {"status":true,"data":"Alice"}
+*/
+```
+
+## Synchronous response
+
+You can deliver responses with data you already have (or can have synchronously). Your controller/middleware function name should ends in `'deliverSync'`. Examples:
+
+```javascript
+app.get('/',function deliverSync(){
+    return config
+})
+/*
+200 {"status":true,"data":{ "key": 1234 }}
+*/
+
+app.get('/user',function getUserDeliverSync(){
+    return this.user.name
+})
+/*
+200 {"status":true,"data":"Alice"}
+*/
+
+
+```
+
 ## Using as middleware
 
 If you call `next()`, no response is generated, the return value is ignored.
@@ -309,7 +352,7 @@ exceptionPool.add('NoSuchFile',{
 })
 
 //Route controller
-app.get('/',function(){
+app.get('/',function*(){
     return fs.readdirSync('/invalid/path')
  })
 /* --> 400 

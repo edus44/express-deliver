@@ -31,9 +31,9 @@ function testCtrl(ctrl,statusCode,body,done,exceptionPool){
 let m = process.version.match(/v(\d+).(\d+)/ )
 let vMajor = m && m[1]
 let vMinor = m && m[2]
-let supportsAsync = vMajor>=7 && vMinor >= 6
+let supportsAsync = vMajor>=8 || (vMajor==7 && vMinor >= 6)
 
-describe('controller',()=>{
+describe('controller async',()=>{
 
     it('should respond normally',(done)=>{
         testCtrl((req,res)=>{
@@ -66,6 +66,17 @@ describe('controller',()=>{
         })
         `)
     }
+
+    it('should deliver success from promise',(done)=>{
+
+        testCtrl(function test1Deliver(){
+            return Promise.resolve('hi')
+        },200,{
+            status:true,
+            data:'hi'
+        },done)
+    })
+
 
     it('should deliver fail',(done)=>{
         testCtrl(function*(){
@@ -277,4 +288,69 @@ describe('controller',()=>{
         })
     })
 
+})
+
+
+describe('controller sync',()=>{
+
+    it('should deliver success',(done)=>{
+
+        testCtrl(function test2DeliverSync(){
+            return 'hi'
+        },200,{
+            status:true,
+            data:'hi'
+        },done)
+    })
+
+
+    it('should ignore promise result',(done)=>{
+        testCtrl(function test3DeliverSync(req,res,next){
+            next('ignore')
+            res.status(201)
+            res.send({message:'hi'})
+        },201,{
+            message:'hi'
+        },done)
+    })
+
+    it('should deliver 404 with empty next',(done)=>{
+        testCtrl(function test4DeliverSync(req,res,next){
+            next()
+        },404,{
+            status:false,
+            error:{
+                code:1002,
+                message:'Route not found'
+            }
+        },done)
+    })
+
+
+    it('should deliver fail',(done)=>{
+        testCtrl(function test5DeliverSync(){
+            throw new Error('foo')
+        },500,{
+            status:false,
+            error:{
+                code:1000,
+                message:'Internal error',
+                data:'Error: foo'
+            }
+        },done)
+    })
+
+    it('should deliver fail calling next with value and ignore error thrown',(done)=>{
+        testCtrl(function test6DeliverSync(req,res,next){
+            next('something')
+            throw 'shit'
+        },500,{
+            status:false,
+            error:{
+                code:1000,
+                message:'Internal error',
+                data:'Error: something'
+            }
+        },done)
+    })
 })
