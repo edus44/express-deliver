@@ -268,6 +268,21 @@ describe('controller async',()=>{
         },200,{custom:'first'},done)
     })
 
+    it('should avoid circular JSON',(done)=>{
+        testCtrl(function*(){
+            let a = {}
+            a.self = a
+            return a
+        },500,{
+            status:false,
+            error:{
+                code:1000,
+                message:'Internal error',
+                data:'TypeError: Converting circular structure to JSON'
+            }
+        },done)
+    })
+
 
     it('should use res.locals as context',(done)=>{
         let app = express()
